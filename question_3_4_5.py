@@ -6,10 +6,11 @@
     Хобби пишем через двоеточие и пробел после ФИО.
     Реализовать интерфейс командной строки, чтобы можно было задать имя обоих исходных файлов и имя выходного файла.
 """
-from os.path import exists
-from sys import argv
-from random import randint, sample
+from os.path import exists              # импортируем exists чтобы обработать хотя бы отсутствие файла
+from sys import argv                    # импортируем список аргументов запуска
+from random import randint, sample      # импортируем рандом
 
+# дефолтные пути к файлам
 hobbies_f = 'hobbies.csv'
 users_f = 'users.csv'
 users_hobbies_f = 'users_hobby.txt'
@@ -17,96 +18,97 @@ users_hobbies_f = 'users_hobby.txt'
 
 def clear_file(path):
     """Чистит целевой файл от данных"""
-    clear_f = open(path, 'w')
-    clear_f.close()
+    clear_f = open(path, 'w')           # перезаписываем целевой файл пустыми данными
+    clear_f.close()                     # закрываем файл
 
 
 def file_lines_score(path):
     """Считает строки в файле path"""
-    score = 0
-    with open(path, 'a+', encoding='utf-8') as f3:
-        f3.seek(0)
-        for _ in f3:
-            score += 1
-    return score
+    score = 0                                       # обнуляем счётчик
+    with open(path, 'a+', encoding='utf-8') as f3:  # открываем целевой файл
+        f3.seek(0)                                      # двигаем курсор в начало файла
+        for _ in f3:                                    # пробегаем по строкам
+            score += 1                                      # увеличивая счётчик
+    return score                                    # возвращаем результат
 
 
 def gen_hobbies(path):
     """Генерирует файл с путём path.
     Содержит строки состоящие из случайного списка хобби длинной от 1 до 3 элементов"""
-    num_of_users = file_lines_score(users_f)
+    num_of_users = file_lines_score(users_f)        # запрашиваем количество пользователей
     while True:
+        # перезапрашиваем ввод пока не введут ненулевое число
         num_of_strings = input(f'Сколько строк с хобби сформировать?\n(строк в файле users.csv - {num_of_users})\n>>> ')
         if num_of_strings.isdigit() and int(num_of_strings):
             num_of_strings = int(num_of_strings)
             break
-    clear_file(path)
-    with open('hobbies to generator.txt', encoding='utf-8') as f1:
-        content = f1.read()
-        hobbies_list = content.splitlines()[1:]
-        content = ''
-    with open(path, 'a', encoding='utf-8') as f2:
-        for i in range(num_of_strings):
+    clear_file(path)                                                # чистим файл хобби перед генерацией
+    with open('hobbies to generator.txt', encoding='utf-8') as f1:  # открываем файл со списком возможных хобби
+        content = f1.read()                                             # вычитываем его
+        hobbies_list = content.splitlines()[1:]                         # разбиваем на список строк
+        content = ''                                                    # освобождаем память от содержимого файла
+    with open(path, 'a', encoding='utf-8') as f2:                   # открываем указанный файл на дозапись
+        for i in range(num_of_strings):                                 # добавляя в него указанное количество строк
+            # генерим случайные списки строк и преобразовываем в строку удалив ненужные скобки, кавычки и пробелы
             line2 = str(sample(hobbies_list, k=(randint(1, 3)))) \
                 .replace('[', '').replace(']', '').replace(', ', ',').replace("'", '')
-            f2.write(line2 + '\n')
-        hobbies_list = []
-    print('Список хобби для пользователей сгенерирован')
+            f2.write(line2 + '\n')                                  # записываем полученную строку в файл
+        hobbies_list = []                                           # освобождаем память от ненужного списка
+    print('Список хобби для пользователей сгенерирован')            # сообщаем об успехе
 
 
 def gen_users_hobbies(users_path, hobbies_path, sum_path):
     """Создаёт файл с пользователями и хобби из двух файлов"""
-    users_list_length = file_lines_score(users_path)
-    hobbies_list_length = file_lines_score(hobbies_path)
-    clear_file(sum_path)
-    user_gen = read_file(users_path)
-    hobby_gen = read_file(hobbies_path)
-    for i in range(max(hobbies_list_length, users_list_length)):
-        user = next(user_gen)
-        if i < hobbies_list_length:
-            hobby = next(hobby_gen)
+    users_list_length = file_lines_score(users_path)                # считаем количество пользователей
+    hobbies_list_length = file_lines_score(hobbies_path)            # считаем количество строк с хобби
+    clear_file(sum_path)                                            # чистим целевой файл
+    user_gen = read_file(users_path)                                # создаём генератор строк из файла пользователей
+    hobby_gen = read_file(hobbies_path)                             # создаём генератор строк из файла хобби
+    for i in range(max(hobbies_list_length, users_list_length)):  # запускаем цикл на макс количество строк в исходниках
+        user = next(user_gen)                                           # забираем следующего пользователя из файла
+        if i < hobbies_list_length:                                     # если файл с хобби ещё не кончился
+            hobby = next(hobby_gen)                                         # забираем следующий набор хобби
         else:
-            hobby = None
-        user_hobby = f'{user}: {hobby}\n'
-        with open(sum_path, 'a', encoding='utf-8') as saved_file:
-            saved_file.write(user_hobby)
-            print(user_hobby)
-    print('Файл со списком пользователей-хобби сгенерирован')
+            hobby = None                                                    # иначе вместо хобби ставим None
+        user_hobby = f'{user}: {hobby}\n'                               # собираем строку юзер: хобби
+        with open(sum_path, 'a', encoding='utf-8') as saved_file:       # открываем целевой файл
+            saved_file.write(user_hobby)                                    # и дописываем ее туда
+    print('Файл со списком пользователей-хобби сгенерирован')       # выводим результат
 
 
 def read_file(path):
     """Построчное чтение файла генератором"""
-    with open(path, encoding='utf-8') as file:
+    with open(path, encoding='utf-8') as file:  # открываем файл источник
         for string in file:
-            yield string.strip()
+            yield string.strip()                # и возвращаем из него данные по строке на запрос
 
 
-if len(argv) == 2:
-    if argv[1] == 'gen':
-        gen_hobbies(hobbies_f)
-    else:
+if len(argv) == 2:      # если имеется 1 аргумент запуска
+    if argv[1] == 'gen':    # проверяем не является ли он запросом генерации файла хобби
+        gen_hobbies(hobbies_f)  # если да - запускаем функцию генерации
+    else:                       # иначе выводим справку
         print('gen - сгенерировать списки хобби в файл по умолчанию\n'
               'gen <имя файла> - сгенерировать списки хобби в указанный файл\n'
               'copy_users или cu <имя файла> скопировать дефолтный список пользователей в указанный файл\n'
               '<файл пользователей> <файл хобби> <итоговый файл> - собрать пользователей и хобби в один файл\n'
               'осторожно - если список хобби больше списка пользователей, всё сломается!')
-elif len(argv) == 3:
-    if argv[1] == 'gen':
-        gen_hobbies(argv[2])
-    elif argv[1] == 'copy_users' or argv[1] == 'cu':
-        clear_file(argv[2])
-        import_file = read_file(users_f)
-        for line in import_file:
+elif len(argv) == 3:    # если аргумента 2
+    if argv[1] == 'gen':                                # и если первый - запрос на генерацию хобби
+        gen_hobbies(argv[2])                        # запускаем генерирование хобби в указанный вторым аргументом файл
+    elif argv[1] == 'copy_users' or argv[1] == 'cu':    # если же первый аргумент - запрос на копирование списка юзеров
+        clear_file(argv[2])                                 # чистим файл из второго аргумента
+        import_file = read_file(users_f)                    # создаём генератор строк из дефолтного файла пользователей
+        for line in import_file:                            # построчно читаем задержимое генератора
             with open(argv[2], 'a', encoding='utf-8') as copy_file:
-                copy_file.write(line + '\n')
-        print('Список пользователей скопирован')
-    else:
-        print('Указаны неверные аргументы')
-elif len(argv) > 3:
-    if exists(argv[1]) and exists(argv[2]):
-        gen_users_hobbies(argv[1], argv[2], argv[3])
-    else:
-        print('Вы указали не существующий файл')
-else:
-    gen_hobbies(hobbies_f)
-    gen_users_hobbies(users_f, hobbies_f, users_hobbies_f)
+                copy_file.write(line + '\n')                    # и пишем его в целевой файл из второго аргумента
+        print('Список пользователей скопирован')            # выводим результат работы
+    else:                                               # если первый аргумент из двух неизвестен
+        print('Указаны неверные аргументы')                 # сообщаем об ошибке
+elif len(argv) > 3:                                 # если аргументов запуска больше 2
+    if exists(argv[1]) and exists(argv[2]):             # и файлы с именами соответствующими 1 и 2 аргументу существуют
+        gen_users_hobbies(argv[1], argv[2], argv[3])        # запускаем слияние этих файлов в файл из 3го аргумента
+    else:                                               # если файл(ы) не найдены
+        print('Вы указали не существующий файл')            # выводим сообщение об ошибке
+else:                                               # в случае запуска без аргументов
+    gen_hobbies(hobbies_f)                                  # запускаем генератор хобби
+    gen_users_hobbies(users_f, hobbies_f, users_hobbies_f)  # и после этого слияние по умолчанию
