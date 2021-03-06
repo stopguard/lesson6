@@ -64,7 +64,7 @@ def gen_users_hobbies(users_path, hobbies_path, sum_path):
     clear_file(sum_path)                                            # чистим целевой файл
     user_gen = read_file(users_path)                                # создаём генератор строк из файла пользователей
     hobby_gen = read_file(hobbies_path)                             # создаём генератор строк из файла хобби
-    for i in range(users_list_length):  # запускаем цикл на макс количество строк в исходниках
+    for i in range(users_list_length):                              # запускаем цикл на количество пользователей
         user = next(user_gen)                                           # забираем следующего пользователя из файла
         if i < hobbies_list_length:                                     # если файл с хобби ещё не кончился
             hobby = next(hobby_gen)                                         # забираем следующий набор хобби
@@ -75,10 +75,10 @@ def gen_users_hobbies(users_path, hobbies_path, sum_path):
             saved_file.write(user_hobby)                                    # и дописываем ее туда
     if hobbies_list_length > users_list_length:                     # если список хобби ещё не закончился
         with open(sum_path, 'a', encoding='utf-8') as saved_file:       # открываем целевой файл
-            saved_file.write('code 1')                                    # и дописываем туда код выхода
-        print('Exit code 1: Неожиданный конец списка пользователей')    # выводим результат
-    else:
-        print('Файл со списком пользователей-хобби сгенерирован')       # выводим результат
+            saved_file.write('code 1')                                      # и дописываем туда ошибку
+        print('Exit code 1: Неожиданный конец списка пользователей')    # выводим ошибку
+    else:                                                           # иначе
+        print('Файл со списком пользователей-хобби сгенерирован')       # выводим отчёт об успехе
 
 
 def read_file(path):
@@ -106,7 +106,7 @@ elif len(argv) == 3:    # если аргумента 2
     elif argv[1] == 'copy_users' or argv[1] == 'cu':    # если же первый аргумент - запрос на копирование списка юзеров
         clear_file(argv[2])                                 # чистим файл из второго аргумента
         import_file = read_file(users_f)                    # создаём генератор строк из дефолтного файла пользователей
-        for line in import_file:                            # построчно читаем задержимое генератора
+        for line in import_file:                            # построчно читаем содержимое генератора
             with open(argv[2], 'a', encoding='utf-8') as copy_file:
                 copy_file.write(line + '\n')                    # и пишем его в целевой файл из второго аргумента
         print('Список пользователей скопирован')            # выводим результат работы
